@@ -93,7 +93,7 @@ class LibraryScopedNameFinder {
             // This is a bare type param, like "T"
             type is TypeParameterType) {
       // TODO(pavanpodila): Once we migrate to NNBD, change the flag to `true`
-      return type.getDisplayString(withNullability: false);
+      return type.getDisplayString(withNullability: true);
     }
 
     return _getNamedElementTypeName(typeElement, type);
