@@ -1,4 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:mobx_codegen/src/template/comma_list.dart';
 
@@ -22,6 +23,7 @@ class LibraryScopedNameFinder {
   final LibraryElement library;
 
   Map<Element, String> _namesByElement;
+
   Map<Element, String> get namesByElement {
     if (_namesByElement != null) {
       return _namesByElement;
@@ -92,7 +94,6 @@ class LibraryScopedNameFinder {
         typeElement == null ||
             // This is a bare type param, like "T"
             type is TypeParameterType) {
-      // TODO(pavanpodila): Once we migrate to NNBD, change the flag to `true`
       return type.getDisplayString(withNullability: true);
     }
 
@@ -125,13 +126,16 @@ class LibraryScopedNameFinder {
     // Determine the name of the type, without type arguments.
     assert(namesByElement.containsKey(typeElement));
 
+    final nullabilitySuffix =
+        type.nullabilitySuffix == NullabilitySuffix.question ? '?' : '';
+
     // If the type is parameterized, we recursively name its type arguments
     if (type is ParameterizedType && type.typeArguments.isNotEmpty) {
-      final typeArgNames = SurroundedCommaList(
-          '<', '>', type.typeArguments.map(_getDartTypeName).toList());
+      final typeArgNames = SurroundedCommaList('<', '>$nullabilitySuffix',
+          type.typeArguments.map(_getDartTypeName).toList());
       return '${namesByElement[typeElement]}$typeArgNames';
     }
 
-    return namesByElement[typeElement];
+    return '${namesByElement[typeElement]}$nullabilitySuffix';
   }
 }
